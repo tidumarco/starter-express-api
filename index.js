@@ -58,23 +58,21 @@ app.delete("/api/persons/:id", (request, response) => {
 
 app.post("/api/persons", (request, response, next) => {
   const body = request.body;
-
-  //   if (!body.name || !body.number) {
-  //     return response.status(400).json({
-  //       error: "name or number missing",
-  //     });
-  //   }
-
-  //   if (persons.find((person) => person.name === body.name)) {
-  //     return response.status(400).json({
-  //       error: "name already in database",
-  //     });
-  //   }
   const person = new Person({
     name: body.name,
     number: body.number,
-    // id: generateId(),
   });
+  if (person.name.length < 3) {
+    return response.status(400).json({
+      error: `${body.name} is shorter than the minimum allowed length (3).`,
+    });
+  }
+
+//   if (person.number.toString().length <= 8) {
+//     return response
+//       .status(400)
+//       .json({ error: "The phone number is too short." });
+//   }
 
   person
     .save()
@@ -87,8 +85,16 @@ app.post("/api/persons", (request, response, next) => {
 app.put("/api/persons/:id", (request, response) => {
   const id = request.params.id;
   const body = request.body;
+
+  if (body.number.toString().length <= 8) {
+    return response
+      .status(400)
+      .json({ error: "The phone number is too short." });
+  }
+
   Person.findByIdAndUpdate(id, body, {
     new: true,
+    runValidators: true,
   })
     .then((person) => {
       response.json(person);

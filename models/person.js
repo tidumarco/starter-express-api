@@ -19,8 +19,14 @@ const personSchema = new mongoose.Schema({
     required: true,
   },
   number: {
-    type: Number,
-    required: true,
+    type: String,
+    validate: {
+      validator: function (v) {
+        return /\d{3}/.test(v) && v.replace(/-/g, "").length >= 9;
+      },
+      message: (props) => `${props.value} is not a valid phone number!`,
+    },
+    required: [true, "User phone number required."],
   },
 });
 const Person = mongoose.model("Person", personSchema);
@@ -30,6 +36,8 @@ const person = new Person({
   number: String,
   date: new Date(),
 });
+
+let error = person.validateSync();
 
 personSchema.set("toJSON", {
   transform: (document, returnedObject) => {
